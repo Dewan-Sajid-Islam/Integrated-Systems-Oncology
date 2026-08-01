@@ -1,0 +1,45 @@
+# CITATION.cff
+cff-version: 1.2.0
+message: "If you use Integrated Systems Oncology in research, publications, teaching, or derivative software, please cite both this software and the accompanying manuscript."
+title: "Integrated Systems Oncology: A Computational Oncology Framework"
+version: 1.0.0
+date-released: 2026
+authors:
+  - family-names: "Dewan"
+    given-names: "Sajid Islam"
+    affiliation: "Independent Researcher"
+    city: "Dhaka"
+    country: "Bangladesh"
+license: "Apache-2.0"
+repository-code: "https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology.git"
+keywords:
+  - computational oncology
+  - systems biology
+  - tumor evolution
+  - cancer evolution
+  - metabolism
+  - epigenetics
+  - cancer modelling
+  - simulation
+  - computational biology
+  - Python
+abstract: >
+  Integrated Systems Oncology is a modular computational oncology framework composed
+  of four independently validated biological simulation engines: Tumor Evolution,
+  Metabolism, Epigenetics, and Synergy, with a master orchestration layer and
+  project-wide validation. The framework provides deterministic, reproducible
+  simulations of cancer progression, covering clonal evolution, metabolic dynamics,
+  epigenetic regulation, and their systems-level interactions. It is designed for
+  reproducible computational oncology research, education, and scientific collaboration.
+preferred-citation:
+  type: "article"
+  title: "Integrated Systems Oncology: A Computational Framework for Multi-Scale Cancer Modelling"
+  authors:
+    - family-names: "Dewan"
+      given-names: "Sajid Islam"
+  year: 2026
+  journal: "TBD"
+  volume: "TBD"
+  issue: "TBD"
+  pages: "TBD"
+  doi: "10.XXXX/YYYY"  # placeholder; will be updated after publication
