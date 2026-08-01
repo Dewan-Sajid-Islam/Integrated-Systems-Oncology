@@ -1,0 +1,22 @@
+Integrated Systems Oncology Engine
+Software Philosophy
+
+1. Biology drives mathematics.
+2. Mathematics drives simulation.
+3. Simulation drives outputs.
+4. Outputs drive figures.
+5. Figures support the manuscript.
+
+The manuscript never dictates the simulation.
+
+Every figure must originate from reproducible simulation outputs.
+
+Every equation must have biological meaning.
+
+Every parameter must be explicitly documented.
+
+Every simulation must be reproducible.
+
+The engine is the primary scientific artifact.
+
+The manuscript is one application of the engine.

@@ -1,0 +1,25 @@
+✔ Architecture
+
+✔ Tumor Evolution
+
+✔ Metabolism
+
+✔ Epigenetics
+
+✔ Synergy
+
+⬜ Master Engine
+
+⬜ Integration
+
+⬜ Figure Generation
+
+⬜ Benchmarks
+
+⬜ Documentation
+
+⬜ Paper Revision
+
+⬜ Release v1.0
+
+⬜ Submission
