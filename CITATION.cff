@@ -2,8 +2,8 @@
 cff-version: 1.2.0
 message: "If you use Integrated Systems Oncology in research, publications, teaching, or derivative software, please cite both this software and the accompanying manuscript."
 title: "Integrated Systems Oncology: A Computational Oncology Framework"
-version: 1.0.0
-date-released: 2026
+version: 1.0.1
+date-released: 2026-08-03
 authors:
   - family-names: "Dewan"
     given-names: "Sajid Islam"
@@ -11,7 +11,8 @@ authors:
     city: "Dhaka"
     country: "Bangladesh"
 license: "Apache-2.0"
-repository-code: "https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology.git"
+repository-code: "https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology"
+doi: "10.5281/zenodo.21773219"
 keywords:
   - computational oncology
   - systems biology
@@ -32,14 +33,12 @@ abstract: >
   epigenetic regulation, and their systems-level interactions. It is designed for
   reproducible computational oncology research, education, and scientific collaboration.
 preferred-citation:
-  type: "article"
-  title: "Integrated Systems Oncology: A Computational Framework for Multi-Scale Cancer Modelling"
+  type: software
+  title: "Integrated Systems Oncology: A Computational Oncology Framework"
   authors:
     - family-names: "Dewan"
       given-names: "Sajid Islam"
-  year: 2026
-  journal: "TBD"
-  volume: "TBD"
-  issue: "TBD"
-  pages: "TBD"
-  doi: "10.XXXX/YYYY"  # placeholder; will be updated after publication
+  version: "1.0.1"
+  doi: "10.5281/zenodo.21773219"
+  repository-code: "https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology"
+  date-released: "2026-08-03"
