@@ -5,7 +5,7 @@ All notable changes to the Integrated Systems Oncology Framework are documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0] – TBD
+## [1.0.0]
 
 ### Added
 - **Tumor Evolution Engine** – Complete implementation of clonal evolution with:
