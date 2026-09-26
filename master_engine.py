@@ -21,7 +21,7 @@ import time
 from pathlib import Path
 
 
-VERSION = "1.0.0"
+VERSION = "1.0.2"
 ENGINES = [
     ("Tumor Evolution", "tumor_evolution"),
     ("Metabolism", "metabolism"),
