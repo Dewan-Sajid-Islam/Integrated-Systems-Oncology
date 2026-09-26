@@ -1,0 +1,691 @@
+\documentclass[12pt,a4paper]{article}
+
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{geometry}
+\usepackage{setspace}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+\usepackage{natbib}
+\usepackage{hyperref}
+\usepackage{titlesec}
+\usepackage{titling}
+\usepackage{etoolbox}
+\usepackage{caption}
+\usepackage{subcaption}
+\usepackage{enumitem}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{orcidlink}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    citecolor=green,
+    urlcolor=red,
+    pdftitle={Integrated Systems Oncology: A Reproducible Computational Framework for Modeling Tumor Evolution, Metabolism, Epigenetics, and Adaptive Synergy},
+    pdfauthor={Dewan Sajid Islam}
+}
+
+\geometry{left=1in, right=1in, top=1in, bottom=1in}
+
+\onehalfspacing
+
+\fancypagestyle{mainstyle}{
+    \fancyhf{}
+    \fancyhead[C]{\leftmark}
+    \fancyfoot[C]{\thepage\ of \pageref{LastPage}}
+    \renewcommand{\headrulewidth}{0.4pt}
+    \renewcommand{\footrulewidth}{0.4pt}
+}
+
+\title{\textbf{Integrated Systems Oncology: A Reproducible Computational Framework for Modeling Tumor Evolution, Metabolism, Epigenetics, and Adaptive Synergy}}
+\author{Dewan Sajid Islam\orcidlink{0009-0008-8784-8480} \\ Independent Researcher \\ Biam Model School and College \\ Dhaka, Bangladesh}
+\date{}
+
+\titleformat{\section}{\large\bfseries}{\thesection}{1em}{}
+\titleformat{\subsection}{\bfseries}{\thesubsection}{1em}{}
+\titleformat{\subsubsection}{\itshape}{\thesubsubsection}{1em}{}
+
+\newcommand{\R}{\mathbb{R}}
+\newcommand{\N}{\mathbb{N}}
+\newcommand{\E}{\mathbb{E}}
+
+\lstset{
+    language=Python,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue},
+    commentstyle=\color{green},
+    stringstyle=\color{red},
+    showstringspaces=false,
+    breaklines=true,
+    frame=single
+}
+
+\begin{document}
+
+\pagestyle{empty}
+
+    \centering
+    \vspace*{2cm}
+    {\LARGE\bfseries Integrated Systems Oncology: A Reproducible Computational Framework for Modeling Tumor Evolution, Metabolism, Epigenetics, and Adaptive Synergy\par}
+    \vspace{1.5cm}
+    {\Large Dewan Sajid Islam\orcidlink{0009-0008-8784-8480}\par}
+    \vspace{0.3cm}
+    {Independent Researcher\par}
+    \vspace{0.1cm}
+    {Biam Model School and College\par}
+    \vspace{0.1cm}
+    {Dhaka, Bangladesh\par}
+    \vspace{2cm}
+
+    \begin{abstract}
+        \noindent Cancer is a complex adaptive system whose progression and therapeutic response are shaped by coupled processes across genetic, metabolic, and epigenetic scales. Isolated computational models of any single axis of this system miss the interactions that determine emergent behaviors such as resistance and phenotypic plasticity. We present \textit{Integrated Systems Oncology} (ISO), a modular and reproducible computational framework that integrates four independently validated engines: a Tumor Evolution Engine that models clonal population dynamics, mutation generation, and lineage structure through a discrete stochastic birth--death--mutation process; a Metabolism Engine that models reaction-diffusion dynamics of oxygen, glucose, lactate, ATP, pH, and reactive oxygen species together with the Warburg effect, mitochondrial efficiency, hypoxia, and necrosis; an Epigenetics Engine that models DNA methylation, histone acetylation, chromatin accessibility, gene-expression potential, stemness, plasticity, differentiation, and epigenetic age; and a Synergy Engine that aggregates the resulting fitness components through a systems-level state formulation with explicit feedback terms. ISO is implemented as four standalone Python packages under a master orchestration layer with engine-level and project-wide validation. Each engine is deterministic given a random seed and is verified by dedicated validation suites that test numerical stability, the directionality of implemented relationships, and cross-run reproducibility. The framework itself, not any specific biological prediction, is the primary contribution of this work: it provides a transparent, extensible substrate for mechanistic computational experiments on interacting cancer-state variables. We describe the mathematical formulation, software architecture, validation architecture, and scope of ISO, and we explicitly separate computational synergy from clinical or experimental therapeutic synergy. All currently described capabilities are implemented and software-validated in the released software; capabilities that are not yet implemented are identified as future work. ISO is intended for reproducible computational oncology research, education, and scientific collaboration, and it is not claimed to be clinically validated.
+    \end{abstract}
+
+\noindent\textbf{Keywords:} computational oncology, systems biology, cancer evolution, tumor metabolism, epigenetics, reproducible software, mathematical modeling, complex adaptive systems
+
+\thispagestyle{empty}
+
+\newpage
+\pagestyle{mainstyle}
+\setcounter{page}{1}
+
+\section{Introduction}
+
+\subsection{Cancer as a Complex Adaptive System}
+
+Cancer progression is increasingly understood as an evolutionary process in which heterogeneous cell populations compete for resources, adapt to microenvironmental pressures, and acquire resistance to therapeutic intervention \citep{mcgranahan2017,beerenwinkel2015}. The underlying heterogeneity is multidimensional: genetic subclonal diversity, reversible epigenetic states, metabolic flexibility, and dynamic interactions with the tissue microenvironment together determine how a tumor responds to selection \citep{hanahan2022,baylin2016,pavlova2022}. This multidimensionality is not merely a descriptive complication; it is the principal reason single-axis therapeutic and computational strategies tend to fail. When only one component of a complex adaptive system is targeted or modeled, the rest of the system adjusts, and the perturbation is absorbed by compensatory dynamics.
+
+Computational modeling has become a central methodology for studying such systems \citep{kitano2002}. Population-dynamics models of clonal evolution, reaction-diffusion models of tumor metabolism, and dynamical models of epigenetic regulation have each yielded valuable insight \citep{altrock2015,markert2015}. However, these models are typically developed in isolation, with different state spaces, different time scales, and different assumptions about how the components of the system couple. This fragmentation limits the kinds of questions that can be asked: interactions between evolutionary, metabolic, and epigenetic processes are exactly where much of the biologically interesting behavior occurs, yet they are difficult to study when each process is captured only in its own separate framework.
+
+\subsection{The Case for a Modular Systems Framework}
+
+There are two broad strategies for addressing this fragmentation. One is to build a single monolithic simulator that attempts to represent all relevant biology within a single coupled formalism. This approach maximizes immediate integration but tends to sacrifice interpretability, modularity, and verifiability: it becomes difficult to isolate which submodel is responsible for a given behavior and difficult to validate the submodels independently. The alternative, which we adopt here, is to build a set of independent, carefully validated engines that each represent one clearly bounded biological domain, designed to be coupled through explicit, documented interfaces at the systems level. This second approach accepts the cost of designing coupling interfaces but gains the substantial benefits of independent development, independent validation, and independent reuse.
+
+We present \textit{Integrated Systems Oncology} (ISO), a computational framework built on this second principle. ISO comprises four engines---Tumor Evolution, Metabolism, Epigenetics, and Synergy---each implemented as a standalone Python package with its own configuration, state variables, update rules, and validation suite. A master orchestration layer executes the engines in sequence and reports their status. A project-wide validation script executes the validation suite of every engine and produces a unified report. Each engine is deterministic given a random seed, and reproducibility across runs is verified by dedicated validators.
+
+\subsection{Scope and Scientific Contribution}
+
+The contribution of this work is methodological. ISO is not presented as a clinically validated tool, nor does this manuscript report empirical biological discoveries. Instead, ISO is presented as a reproducible computational substrate for mechanistic experiments on interacting cancer-state variables, in which each engine implements a well-defined subset of the biology and the Synergy Engine implements a systems-level aggregation of the resulting state. The framework's scope is deliberately bounded: it currently represents clonal population dynamics and mutation bookkeeping, metabolic reaction-diffusion dynamics with the Warburg effect and necrosis, dynamic chromatin and differentiation state, and systems-level adaptive properties such as mutation pressure, therapy resistance, adaptive capacity, resilience, and stability. It does not currently represent the immune system, therapeutic intervention, spatial three-dimensional tissue architecture, or patient-specific calibration.
+
+The manuscript is organized as follows. Section~\ref{sec:framework} introduces the four engines and their state spaces. Section~\ref{sec:math} presents the mathematical formulation of the model as implemented. Section~\ref{sec:architecture} describes the software architecture and orchestration. Section~\ref{sec:validation} describes validation and reproducibility. Section~\ref{sec:results} reports framework-level results that are supported by the released software, explicitly labeled as computational and methodological rather than empirical. Section~\ref{sec:discussion} discusses interpretation, limitations, and the distinction between computational and clinical synergy. Section~\ref{sec:future} outlines future work.
+
+\begin{table}[H]
+\centering
+\caption{Overview of the four ISO engines.}
+\label{tab:engine_overview}
+\begin{tabular}{p{2.4cm} p{4.2cm} p{4.2cm} p{2.4cm}}
+\toprule
+\textbf{Engine} & \textbf{Domain} & \textbf{Representative State Variables} & \textbf{Coupling Role} \\
+\midrule
+Tumor Evolution & Clonal population dynamics, mutation, lineage & clone populations, growth rates, mutation counts, fitness, generation & Provides per-clone evolutionary state \\
+Metabolism & Reaction-diffusion dynamics of the tumor microenvironment & oxygen, glucose, lactate, ATP, pH, ROS, hypoxia, necrosis, phenotype & Provides per-region metabolic state \\
+Epigenetics & Dynamic chromatin and differentiation state & methylation, acetylation, chromatin accessibility, expression potential, stemness, plasticity, differentiation, epigenetic age & Provides per-region epigenetic state \\
+Synergy & Systems-level adaptive integration & combined fitness, mutation pressure, resistance, adaptive capacity, resilience, stability & Aggregates evolutionary, metabolic, and epigenetic fitness \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{The Integrated Systems Oncology Framework}
+\label{sec:framework}
+
+ISO consists of four computational engines, each modeling a distinct biological domain, together with a master orchestration layer and a project-wide validation suite. This section describes the four engines and the state spaces they represent. The mathematical formulation of the update rules is presented in Section~\ref{sec:math}.
+
+\subsection{Tumor Evolution Engine}
+
+The Tumor Evolution Engine models clonal population dynamics with heritable phenotypic state through a discrete stochastic birth--death--mutation process. Its state consists of a collection of clones, each characterized by a population size, an intrinsic growth rate, a mutation rate, a set of heritable phenotype traits, and lineage metadata. The engine implements:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Clonal growth:} Population dynamics with density-dependent competition. Birth and death events are drawn stochastically for each clone at each step; net population change emerges from the difference between realized births and deaths.
+    \item \textbf{Mutation generation:} Mutation opportunities are generated from division activity. Each opportunity is classified stochastically as driver or passenger and, if it establishes, produces a new clone whose phenotype is inherited from its parent with modification.
+    \item \textbf{Selection:} Clones with higher effective birth relative to death expand more rapidly; selection is therefore an emergent property of the underlying stochastic process rather than an explicitly applied replicator operator.
+    \item \textbf{Lineage tracking:} Every clone records a parent identifier, a generation depth, and a root ancestor identifier, enabling reconstruction of the clonal lineage tree.
+    \item \textbf{Diversity metrics:} Shannon and Simpson diversity indices are computed from the clone population distribution.
+    \item \textbf{Reproducibility:} All stochastic events are generated from a seeded NumPy random generator, ensuring identical simulations for identical configurations.
+\end{itemize}
+
+The engine's purpose is to represent the evolutionary state of a heterogeneous tumor: which clones exist, how their populations change over time, how new clones arise through mutation, and how selection reshapes the population distribution.
+
+\subsection{Metabolism Engine}
+
+The Metabolism Engine models the spatiotemporal dynamics of key metabolites across a one-dimensional grid of tissue regions using a reaction-diffusion formulation. Its state consists of per-region concentrations of oxygen, glucose, lactate, ATP, pH, and reactive oxygen species, together with per-region discrete metabolic phenotypes and a necrosis flag. The engine implements:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Diffusion:} Fickian diffusion of oxygen, glucose, lactate, and pH across regions, with zero-flux boundaries except at vascular regions where concentrations are fixed by supply.
+    \item \textbf{Consumption and production:} Cellular consumption of oxygen and glucose, production of ATP through glycolysis and oxidative phosphorylation, production of lactate from glycolysis, and production of reactive oxygen species from oxidative metabolism.
+    \item \textbf{Warburg effect:} A configurable bias toward aerobic glycolysis, parameterized by a Warburg bias and an aerobic glycolysis fraction, so that glycolytic flux persists even under oxygen-replete conditions.
+    \item \textbf{Mitochondrial efficiency:} A configurable scaling of oxidative ATP production.
+    \item \textbf{pH dynamics:} Acidification by lactate and buffering back toward a physiological baseline.
+    \item \textbf{ROS dynamics:} Production coupled to oxidative metabolism and first-order decay.
+    \item \textbf{Necrosis:} Regions enter a necrotic state when ATP falls below a threshold and stress remains elevated for a sustained interval; necrotic regions are metabolically inactive.
+    \item \textbf{Phenotype assignment:} Each region is assigned to one of six metabolic phenotypes (oxidative, glycolytic, intermediate, hypoxic, quiescent, necrotic) using explicit threshold rules.
+\end{itemize}
+
+The engine's purpose is to represent the metabolic microenvironment as a spatially resolved field, providing the metabolic context in which clonal populations evolve.
+
+\subsection{Epigenetics Engine}
+
+The Epigenetics Engine models dynamic chromatin and differentiation state across the same one-dimensional spatial grid. Its state consists of per-region values for DNA methylation, histone acetylation, chromatin accessibility, gene-expression potential, epigenetic instability, plasticity, stemness, differentiation, environmental stress, and epigenetic age. The engine implements:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Methylation dynamics:} Passive drift toward an equilibrium, active demethylation promoted by acetylation, and stress-dependent modulation.
+    \item \textbf{Acetylation dynamics:} Acetylation and deacetylation with stress-dependent modulation.
+    \item \textbf{Chromatin accessibility:} Opening driven by acetylation and closing driven by methylation.
+    \item \textbf{Gene-expression potential:} A linear combination of acetylation, methylation, and accessibility, with stochastic noise.
+    \item \textbf{Instability and plasticity:} Instability increases with stress and decays; plasticity increases with instability and decays.
+    \item \textbf{Stemness and differentiation:} Coupled dynamics in which stemness declines with differentiation and increases with plasticity, and differentiation progresses toward completion with plasticity permitting partial dedifferentiation.
+    \item \textbf{Epigenetic age:} Accumulation over time with partial reset by high plasticity.
+    \item \textbf{Discrete classification:} Each region is assigned a discrete differentiation state and a discrete chromatin state.
+\end{itemize}
+
+The engine's purpose is to represent the epigenetic and differentiation state of the tumor as a dynamic field, capturing how reversible regulatory states can shift under environmental pressure.
+
+\subsection{Synergy Engine}
+
+The Synergy Engine provides systems-level integration of the evolutionary, metabolic, and epigenetic fitness components. It is initialized with estimates of tumor, metabolic, and epigenetic fitness drawn from configuration parameters, and it evolves its own systems-level state under explicit update rules. Its state consists of per-region values for tumor fitness, metabolic fitness, epigenetic fitness, combined fitness, stemness, plasticity, mutation pressure, selection pressure, metabolic stress, oxidative stress, hypoxia, chromatin accessibility, gene expression, adaptive capacity, therapy resistance, cellular resilience, and system stability. The engine implements:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Combined fitness:} A weighted sum of tumor, metabolic, and epigenetic fitness.
+    \item \textbf{Stress dynamics:} Hypoxia, oxidative stress, and metabolic stress evolving with bounded production and decay terms.
+    \item \textbf{Mutation pressure:} Driven by metabolic and oxidative stress, with saturating production and decay.
+    \item \textbf{Therapy resistance:} Driven by plasticity and resilience, with saturating production and decay.
+    \item \textbf{Adaptive capacity:} Driven by gene expression, with saturating production and decay.
+    \item \textbf{Cellular resilience:} Increased by stemness and decreased by stress.
+    \item \textbf{System stability:} Increased by resilience and decreased by oxidative stress and mutation pressure.
+    \item \textbf{Negative feedback:} Resistance reduces selection pressure, and mutation pressure reduces epigenetic fitness, preventing runaway positive feedback.
+\end{itemize}
+
+The term ``synergy'' in ISO refers to computational or model-level interaction between state variables, not to a clinically or experimentally demonstrated therapeutic synergy. This distinction is emphasized throughout the manuscript.
+
+\section{Mathematical Formulation}
+\label{sec:math}
+
+This section presents the mathematical formulation of the engines as implemented. Notation is defined where first introduced and used consistently thereafter. The numerical treatment differs across engines: the Tumor Evolution Engine is a discrete stochastic process, while the Metabolism, Epigenetics, and Synergy Engines are updated by explicit time-stepping of continuous state variables. Bounds on state variables depend on the physical meaning of each variable: normalized state variables are constrained to $[0,1]$; concentrations are constrained to be non-negative; pH is constrained to a physical range; populations are non-negative and unnormalized; and categorical variables take discrete values from a finite set.
+
+\subsection{Tumor Evolution Dynamics}
+
+Let $P_i$ denote the population of clone $i$, and let $N = \sum_j P_j$ denote the total tumor burden. The evolution of each clone proceeds through discrete stochastic birth and death events within each time step $\Delta t$.
+
+\paragraph{Birth process.}
+The effective per-capita birth rate of clone $i$ is
+\begin{equation}
+b_i = b_0 \, \phi_i \, \eta_i \cdot \max\!\left(0, \; 1 - \frac{N}{K}\right),
+\end{equation}
+where $b_0$ is the base birth rate, $\phi_i$ the clone's proliferation capacity, $\eta_i$ its metabolic efficiency, and $K$ the carrying capacity. The realized number of births in a step is drawn from a Poisson distribution,
+\begin{equation}
+B_i \sim \mathrm{Poisson}\!\left(b_i \, P_i \, \Delta t\right).
+\end{equation}
+
+\paragraph{Death process.}
+The effective per-capita death rate of clone $i$ is
+\begin{equation}
+d_i = d_0 \, \alpha_i \,(1 + \nu_i),
+\end{equation}
+where $d_0$ is the base death rate, $\alpha_i$ the clone's apoptosis susceptibility, and $\nu_i$ its immune visibility. The realized number of deaths in a step is
+\begin{equation}
+D_i \sim \mathrm{Poisson}\!\left(d_i \, P_i \, \Delta t\right).
+\end{equation}
+
+\paragraph{Population update.}
+Populations are updated as
+\begin{equation}
+P_i \leftarrow \max\!\left(0, \; P_i + B_i - D_i\right).
+\end{equation}
+Selection is therefore not an explicitly applied operator; clones with higher effective birth relative to death expand more rapidly under the same competition and mutation regime.
+
+\paragraph{Mutation generation.}
+Mutation opportunities arise from cell division. The expected number of mutation opportunities generated by clone $i$ in a step is
+\begin{equation}
+\lambda_i = B_i \, \mu_i,
+\end{equation}
+where $\mu_i$ is the effective per-division mutation rate,
+\begin{equation}
+\mu_i = \mu_0 \cdot \frac{1}{\max(\rho_i, \rho_{\min})} \cdot (1 + \iota_i),
+\end{equation}
+with $\mu_0$ the base rate, $\rho_i$ the DNA repair efficiency, $\rho_{\min}$ a numerical floor, and $\iota_i$ the genomic instability. Realized attempts are drawn as
+\begin{equation}
+M_i \sim \mathrm{Poisson}(\lambda_i).
+\end{equation}
+Each attempt is stochastically classified as a driver mutation with probability $p_{\mathrm{driver}}$, otherwise as a passenger mutation. Each attempt then establishes a new lineage with probability $p_{\mathrm{est}}$. Successful establishments consume a small seed population from the parent clone and produce a child clone whose phenotype is inherited and modified. The effect of a mutation on growth-related traits is sampled from a zero-mean normal distribution, with a larger standard deviation used for driver mutations and a smaller standard deviation used for passenger mutations, so that drivers have larger typical effect magnitudes than passengers while both remain signed.
+
+\paragraph{Fitness as an observable.}
+Fitness is not imposed exogenously but derived from the realized birth and death rates,
+\begin{equation}
+f_i = b_i - d_i,
+\end{equation}
+and is recorded as a diagnostic quantity. Diversity of the clone population is measured by the Shannon index
+\begin{equation}
+H = -\sum_i \frac{P_i}{N} \ln \frac{P_i}{N},
+\end{equation}
+and the Simpson index
+\begin{equation}
+D = 1 - \sum_i \left(\frac{P_i}{N}\right)^{2}.
+\end{equation}
+
+\subsection{Metabolic Dynamics}
+
+The Metabolism Engine uses a one-dimensional spatial grid indexed by $j = 1, \ldots, n$. Concentrations are updated by explicit time-stepping.
+
+\paragraph{Diffusion.}
+Let $C^{(k)}_j$ denote the concentration of metabolite $k$ in region $j$. Diffusion is modeled with a discrete Laplacian,
+\begin{equation}
+\mathcal{D}^{(k)}_j = D_k \left( C^{(k)}_{j-1} - 2 C^{(k)}_j + C^{(k)}_{j+1} \right),
+\end{equation}
+with zero-flux boundaries at both ends and fixed-concentration boundary conditions at vascular regions.
+
+\paragraph{Consumption.}
+Oxygen and glucose consumption for a non-necrotic region are
+\begin{align}
+O_j^{\mathrm{cons}} &= k_{O_2} \, C^{O_2}_j \, (1 - g_j) \, \Delta t, \\
+G_j^{\mathrm{cons}} &= k_{G} \, C^{G}_j \, (1 + g_j) \, \Delta t,
+\end{align}
+where $g_j$ is the glycolytic fraction of metabolism in that region.
+
+\paragraph{Warburg effect.}
+The glycolytic fraction is
+\begin{equation}
+g_j = \mathrm{clip}\!\left( w + (1 - w)(1 - \tilde{O}_j) + a, \; 0, \; 1 \right),
+\end{equation}
+where $w$ is the Warburg bias, $a$ the aerobic glycolysis fraction, and $\tilde{O}_j$ the normalized oxygen concentration. This captures aerobic glycolysis even under oxygen-replete conditions.
+
+\paragraph{ATP production.}
+\begin{equation}
+\mathrm{ATP}_j^{\mathrm{prod}} = G_j^{\mathrm{cons}} \, g_j \, y_g + G_j^{\mathrm{cons}} \,(1 - g_j) \, y_o \, \epsilon,
+\end{equation}
+where $y_g$ and $y_o$ are the glycolytic and oxidative ATP yields and $\epsilon$ is the mitochondrial efficiency.
+
+\paragraph{Lactate, ROS, pH.}
+Lactate production is
+\begin{equation}
+L_j^{\mathrm{prod}} = G_j^{\mathrm{cons}} \, g_j \, k_L.
+\end{equation}
+Reactive oxygen species are produced in proportion to oxidative ATP production and decay at first order,
+\begin{equation}
+\frac{d\,\mathrm{ROS}_j}{dt} = k_{\mathrm{ROS}} \,\mathrm{ATP}_j^{\mathrm{OXPHOS}} - \kappa_{\mathrm{ROS}} \,\mathrm{ROS}_j.
+\end{equation}
+pH evolves through lactate-driven acidification and buffering back toward a physiological baseline,
+\begin{equation}
+\frac{d\,\mathrm{pH}_j}{dt} = -k_{\mathrm{acid}}\,L_j + k_{\mathrm{buff}}\left(\mathrm{pH}_0 - \mathrm{pH}_j\right).
+\end{equation}
+
+\paragraph{Necrosis and phenotypes.}
+A region is marked necrotic when its ATP falls below a threshold $\theta_{\mathrm{ATP}}$ and its stress exceeds a threshold $\theta_{\mathrm{stress}}$ for a sustained number of consecutive steps; necrotic regions become metabolically inactive. Discrete metabolic phenotypes (oxidative, glycolytic, intermediate, hypoxic, quiescent, necrotic) are assigned by threshold rules applied to oxygen, ATP, and stress.
+
+\subsection{Epigenetic Dynamics}
+
+Let $\mathrm{Met}_j$, $\mathrm{Ace}_j$, and $\mathrm{Acc}_j$ denote methylation, acetylation, and chromatin accessibility in region $j$, and let $S_j$ denote environmental stress. The implemented update rules are
+\begin{align}
+\frac{d\,\mathrm{Met}_j}{dt} &= k_{M}^{\mathrm{drift}}(M_{\mathrm{eq}} - \mathrm{Met}_j) + k_{M}^{\mathrm{demeth}} \mathrm{Ace}_j (1 - \mathrm{Met}_j) + k_{M}^{\mathrm{stress}} S_j (0.5 - \mathrm{Met}_j), \\
+\frac{d\,\mathrm{Ace}_j}{dt} &= k_A^{\mathrm{ac}}(1 - \mathrm{Ace}_j) - k_A^{\mathrm{deac}} \mathrm{Ace}_j + k_A^{\mathrm{stress}} S_j (0.5 - \mathrm{Ace}_j), \\
+\frac{d\,\mathrm{Acc}_j}{dt} &= k_X^{\mathrm{open}} \mathrm{Ace}_j (1 - \mathrm{Acc}_j) - k_X^{\mathrm{close}} \mathrm{Met}_j \mathrm{Acc}_j.
+\end{align}
+Gene-expression potential is a linear combination of the chromatin state variables plus noise,
+\begin{equation}
+\mathrm{Exp}_j = e_0 + \alpha_A \mathrm{Ace}_j + \alpha_M \mathrm{Met}_j + \alpha_X \mathrm{Acc}_j + \xi_j, \qquad \xi_j \sim \mathcal{N}(0, \sigma_E^2),
+\end{equation}
+with $\alpha_M < 0$. Instability and plasticity evolve as
+\begin{align}
+\frac{d\,\mathrm{Inst}_j}{dt} &= k_I^{\mathrm{base}} + k_I^{\mathrm{stress}} S_j - \kappa_I \mathrm{Inst}_j, \\
+\frac{d\,\mathrm{Plas}_j}{dt} &= k_\Psi^{\mathrm{base}} + k_\Psi^{I} \mathrm{Inst}_j - \kappa_\Psi \mathrm{Plas}_j.
+\end{align}
+Stemness $\mathrm{Stem}_j$ and differentiation $\mathrm{Diff}_j$ are coupled,
+\begin{align}
+\frac{d\,\mathrm{Stem}_j}{dt} &= -k_{\Sigma}^{\mathrm{diff}} \mathrm{Diff}_j \mathrm{Stem}_j + k_{\Sigma}^{\Psi} \mathrm{Plas}_j (1 - \mathrm{Stem}_j) - k_{\Sigma}^{\mathrm{stress}} S_j \mathrm{Stem}_j, \\
+\frac{d\,\mathrm{Diff}_j}{dt} &= k_\Delta (1 - \mathrm{Diff}_j)(1 + 2(1 - \mathrm{Stem}_j)) - k_{\Sigma}^{\Psi} \mathrm{Plas}_j \mathrm{Diff}_j.
+\end{align}
+Epigenetic age $\mathrm{Age}_j$ accumulates over time and is partially reset by high plasticity,
+\begin{equation}
+\frac{d\,\mathrm{Age}_j}{dt} = k_T - k_T^{\mathrm{reset}} \mathrm{Plas}_j \mathrm{Age}_j.
+\end{equation}
+Discrete differentiation and chromatin states are assigned by threshold rules applied to $\mathrm{Diff}_j$ and $\mathrm{Acc}_j$, respectively.
+
+\subsection{Synergy Dynamics}
+
+Let $F^{\mathrm{t}}_j$, $F^{\mathrm{m}}_j$, and $F^{\mathrm{e}}_j$ denote tumor, metabolic, and epigenetic fitness in region $j$. Combined fitness is
+\begin{equation}
+F_j = w_{\mathrm{t}} F^{\mathrm{t}}_j + w_{\mathrm{m}} F^{\mathrm{m}}_j + w_{\mathrm{e}} F^{\mathrm{e}}_j, \qquad w_{\mathrm{t}} + w_{\mathrm{m}} + w_{\mathrm{e}} = 1.
+\end{equation}
+Hypoxia, oxidative stress, and metabolic stress evolve with bounded production and decay,
+\begin{align}
+\frac{d\,\mathrm{Hyp}_j}{dt} &= k_H^{\mathrm{resp}} \mathrm{MS}_j (1 - \mathrm{Hyp}_j) - \kappa_H \mathrm{Hyp}_j, \\
+\frac{d\,\mathrm{Ox}_j}{dt} &= k_O^{\mathrm{resp}} F^{\mathrm{m}}_j (1 - \mathrm{Ox}_j) - \kappa_O \mathrm{Ox}_j, \\
+\mathrm{MS}_j &= \alpha_H \mathrm{Hyp}_j + \alpha_O \mathrm{Ox}_j.
+\end{align}
+Mutation pressure evolves as
+\begin{equation}
+\frac{d\,\mathrm{MP}_j}{dt} = k_M^{\mathrm{resp}}\!\left(\alpha_M^{\mathrm{met}} \mathrm{MS}_j + \alpha_M^{\mathrm{ox}} \mathrm{Ox}_j\right) (1 - \mathrm{MP}_j) - \kappa_M \mathrm{MP}_j.
+\end{equation}
+Therapy resistance evolves as
+\begin{equation}
+\frac{dR_j}{dt} = k_R^{\mathrm{resp}}\!\left(\alpha_R^{\Psi} \mathrm{Plas}_j + \alpha_R^{\mathrm{res}} \mathrm{Res}_j\right)(1 - R_j) - \kappa_R R_j,
+\end{equation}
+where $\mathrm{Res}_j$ is cellular resilience. Adaptive capacity evolves as
+\begin{equation}
+\frac{d\,\mathrm{AC}_j}{dt} = k_{\mathrm{AC}}^{\mathrm{resp}} \mathrm{Exp}_j (1 - \mathrm{AC}_j) - \kappa_{\mathrm{AC}} \mathrm{AC}_j.
+\end{equation}
+Cellular resilience evolves as
+\begin{equation}
+\frac{d\,\mathrm{Res}_j}{dt} = k_{\mathrm{Res}}^{\Sigma} \mathrm{Stem}_j (1 - \mathrm{Res}_j) - k_{\mathrm{Res}}^{\mathrm{stress}} \mathrm{MS}_j \mathrm{Res}_j.
+\end{equation}
+System stability evolves as
+\begin{equation}
+\frac{d\,\mathrm{Stab}_j}{dt} = k_{\mathrm{Stab}}^{\mathrm{Res}} \mathrm{Res}_j (1 - \mathrm{Stab}_j) - k_{\mathrm{Stab}}^{O} \mathrm{Ox}_j \mathrm{Stab}_j - k_{\mathrm{Stab}}^{M} \mathrm{MP}_j \mathrm{Stab}_j.
+\end{equation}
+Two additional negative feedbacks are implemented: high resistance reduces selection pressure, and high mutation pressure reduces epigenetic fitness.
+
+\subsection{Numerical Treatment}
+
+The three continuous-state engines (Metabolism, Epigenetics, and Synergy) use explicit time-stepping with a configurable step $\Delta t$, corresponding to a forward-Euler discretization of the update rules above. Time-step selection follows standard stability considerations: $\Delta t$ must be small relative to the fastest rate constant in each subsystem. Bounds are enforced per variable class as described at the beginning of this section. The Tumor Evolution Engine is not integrated by Euler stepping: it is a discrete stochastic process in which births, deaths, and mutation opportunities are drawn from Poisson distributions at each step. Development mode is provided for faster execution during testing, but it increases the effective step size and is not recommended for scientific experiments.
+
+\section{Software Architecture}
+\label{sec:architecture}
+
+\subsection{Module Organization}
+
+ISO is organized as four independent engine packages under a common \texttt{engines/} directory, together with a master orchestration script and a project-wide validation script at the repository root. Each engine package contains its own \texttt{engine.py}, a set of dedicated validators, and a \texttt{validate\_all.py} aggregator. Engine packages do not import one another; they communicate only through the master orchestration layer, which executes them as separate processes.
+
+This design has three principal motivations. First, it makes each engine independently testable: an error in one engine cannot silently propagate into another. Second, it makes each engine independently reusable: a researcher interested only in clonal dynamics or only in tumor metabolism can use the corresponding engine on its own. Third, it enforces explicit interfaces: any information that flows between engines must be passed explicitly through orchestration rather than implicitly through shared mutable state.
+
+\begin{table}[H]
+\centering
+\caption{Software architecture components.}
+\label{tab:architecture}
+\begin{tabular}{p{3.4cm} p{9.6cm}}
+\toprule
+\textbf{Component} & \textbf{Responsibility} \\
+\midrule
+\texttt{engines/tumor\_evolution/} & Tumor evolution engine, configuration, results, and validation suite \\
+\texttt{engines/metabolism/} & Metabolism engine, configuration, results, and validation suite \\
+\texttt{engines/epigenetics/} & Epigenetics engine, configuration, results, and validation suite \\
+\texttt{engines/synergy/} & Synergy engine, configuration, results, and validation suite \\
+\texttt{master\_engine.py} & Sequential orchestration of the four engines as subprocesses \\
+\texttt{validate\_project.py} & Project-wide execution of all engine validation suites \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Configuration and Results}
+
+Each engine exposes two primary dataclasses: a \texttt{SimulationConfig} that holds all configuration parameters (including a random seed and a validation flag), and a \texttt{SimulationResults} object that holds the recorded histories and summary statistics produced by a simulation run. This separation ensures that simulations are fully specified by a configuration object and that results are fully self-describing. Configuration validation is performed at engine construction, and state validation is performed after each recorded step when \texttt{strict\_validation} is enabled.
+
+\subsection{Master Orchestration}
+
+The master orchestration script (\texttt{master\_engine.py}) runs each engine in sequence as a subprocess. It locates the engine directories relative to its own location, captures standard output and standard error, records execution time, and prints a summary. If one engine fails, orchestration continues with the remaining engines and the failure is reported in the summary. This design ensures that a failure in one engine cannot prevent the others from completing, and it preserves the independence of the engines at the level of process execution.
+
+It is important to be precise about what the master orchestration currently does and does not do. The engines are integrated architecturally and conceptually: they share a common design, a common configuration paradigm, and a common validation philosophy. However, the current master script does not automatically pass complete live state trajectories from one engine into the next at each simulation step. Each engine runs to completion on its own. Dynamic, step-by-step cross-engine transfer of state variables is a target of future work (Section~\ref{sec:future}).
+
+\subsection{Project-Wide Validation}
+
+The project-wide validation script (\texttt{validate\_project.py}) executes each engine's \texttt{validate\_all.py} validator as a subprocess and produces a unified report. It returns a non-zero exit code if any validation fails, enabling integration with continuous integration systems and reproducibility workflows. As with orchestration, a failure in one validator does not prevent the remaining validators from running.
+
+\section{Validation and Verification}
+\label{sec:validation}
+
+\subsection{Validation Philosophy}
+
+Validation in ISO is directed at the software and its mathematical consistency, not at the biological correctness of any specific empirical claim. We distinguish explicitly among five categories of verification:
+
+\begin{enumerate}[leftmargin=*]
+    \item \textbf{Code validation:} ensuring that the implementation matches the documented update rules and that state invariants hold.
+    \item \textbf{Numerical consistency:} ensuring that state variables remain finite, bounded, and free of NaN or infinite values throughout simulation.
+    \item \textbf{Deterministic reproducibility:} ensuring that identical configurations with identical random seeds produce identical recorded numerical histories.
+    \item \textbf{Directional plausibility of implemented relationships:} ensuring that implemented relationships (for example, that higher stress leads to higher mutation pressure within the Synergy Engine) behave in the expected direction under synthetic or perturbed inputs.
+    \item \textbf{Empirical validation:} comparison of simulation output against external biological or clinical data.
+\end{enumerate}
+
+ISO currently implements categories (1)--(4). Category (5) is deliberately not claimed, and is a target of future work.
+
+\subsection{Engine Validation Suites}
+
+Each engine includes a set of validators that cover its specific domain. Validation in every engine verifies that state variables remain within their intended bounds, that all recorded values are finite, that array shapes are consistent across the simulation, and that same-seed runs produce identical histories. Beyond this common foundation, engine-specific validators verify the following domain relationships:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Tumor Evolution:} monotonic and carrying-capacity-bounded growth in the absence of mutation and death; greater mutation activity and greater clonal diversity under higher mutation rate; correct driver-plus-passenger bookkeeping; validity of parent and child references in mutation records; Shannon and Simpson diversity matching analytical values for synthetic populations; lineage generation and root-ancestor consistency.
+    \item \textbf{Metabolism:} reduction of concentration gradients by diffusion; fixation of vascular regions at supply concentration; non-negativity and boundedness of all concentrations; occurrence of oxygen and glucose consumption, ATP production, lactate production, and ROS production; decrease of pH under lactate accumulation; correct assignment of metabolic phenotypes to synthetic states; reproducibility across identical seeds.
+    \item \textbf{Epigenetics:} boundedness of all continuous state variables; correct classification of chromatin state for synthetic accessibility values; correct classification of differentiation state for boundary values of the differentiation variable; reproducibility across identical seeds.
+    \item \textbf{Synergy:} correctness of the weighted combined-fitness equation; directional response of mutation pressure, therapy resistance, adaptive capacity, stemness, and system stability to their respective drivers; boundedness and finiteness of all state variables; long-simulation stability; reproducibility across identical seeds.
+\end{itemize}
+
+\subsection{Project-Wide Validation}
+
+Project-wide validation executes all engine validation suites in sequence and produces a unified report. This is the principal integration-level verification in ISO: it ensures that the four engines, taken together, satisfy their individual correctness criteria when executed as a unified software project. It does not constitute a biological validation of any specific simulated outcome.
+
+\begin{table}[H]
+\centering
+\caption{Representative validation tests implemented across the four engines.}
+\label{tab:validation}
+\begin{tabular}{p{3.0cm} p{4.6cm} p{5.6cm}}
+\toprule
+\textbf{Category} & \textbf{Example test} & \textbf{What it verifies} \\
+\midrule
+Code & Combined-fitness equation check & Implementation matches documented weighted sum \\
+Numerical & Boundedness of state variables & Continuous state variables remain within their intended ranges \\
+Numerical & Finiteness of histories & No NaN or Inf values in any recorded history \\
+Deterministic & Same-seed comparison & Identical recorded histories for identical seeds \\
+Directional plausibility & Feedback direction tests & Implemented feedback behaves in the expected direction \\
+Directional plausibility & Phenotype classification & Synthetic states are classified into the correct phenotype \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\section{Reproducibility}
+
+\subsection{Deterministic Execution}
+
+Every engine uses a seeded NumPy random generator initialized from the \texttt{random\_seed} field of its configuration. Given identical configurations and identical seeds, each engine produces identical recorded numerical histories on the same platform. This is verified explicitly by the reproducibility validators in each engine: two runs with the same seed must produce identical \texttt{SimulationResults}, and two runs with different seeds must produce different histories whenever stochastic state is present. Cross-platform numerical identity has not been formally tested and is not claimed.
+
+\subsection{Configuration and Results as First-Class Artifacts}
+
+Because all simulation parameters are held in a single configuration dataclass and all outputs are held in a single results dataclass, a complete simulation can be reproduced from a serialized configuration alone. This makes the framework amenable to scripted parameter sweeps, automated regression testing, and reproducible figure generation, without requiring researchers to reconstruct parameter values from logs or source code. This practice is consistent with widely adopted guidelines for reproducible computational research \citep{sandve2013} and with the FAIR principles for computational artifacts \citep{wilkinson2016}.
+
+\subsection{Project-Wide Validation as a Reproducibility Gate}
+
+The project-wide validation script provides a single-command reproducibility gate. Running it after any code change verifies that all engines still satisfy their correctness criteria. This design ensures that the framework cannot silently drift away from its validated behavior.
+
+\section{Results}
+\label{sec:results}
+
+Because ISO is a computational framework rather than an empirical biological study, the results reported here are framework-level and methodological. They describe what the released software does, what its validation suites verify, and what kinds of model behavior it produces under representative configurations. They do not constitute evidence about any specific biological or clinical claim.
+
+\subsection{Framework Execution}
+
+All four engines execute to completion with their default configurations and produce \texttt{SimulationResults} containing the documented histories. The master orchestration script runs the four engines in sequence and reports the status of each. The project-wide validation script runs all engine validation suites and reports an aggregate status. Both scripts return exit codes compatible with continuous integration systems.
+
+\subsection{Validation Outcomes}
+
+Every engine validation suite completes successfully with the released version of the framework. This includes the numerical, deterministic, and directional-plausibility tests described in Section~\ref{sec:validation}. In particular:
+
+\begin{itemize}[leftmargin=*]
+    \item \textbf{Reproducibility:} Same-seed runs produce identical recorded histories in every engine, and different-seed runs produce different histories whenever stochastic state is present.
+    \item \textbf{Boundedness and finiteness:} State variables remain within their intended ranges and remain finite throughout long simulations (including simulations of several hundred steps).
+    \item \textbf{Implemented relationships:} Directional tests confirm that implemented feedbacks behave in the expected direction. For example, within the Synergy Engine, increasing metabolic stress increases mutation pressure; increasing mutation pressure reduces epigenetic fitness via the implemented cost term; increasing gene expression increases adaptive capacity; increasing resilience increases therapy resistance and system stability; and increasing oxidative stress reduces resilience.
+    \item \textbf{Discrete classification:} Synthetic states are classified into the correct metabolic, chromatin, and differentiation classes by the engines' classification rules.
+\end{itemize}
+
+\subsection{Representative Model Behavior}
+
+To illustrate the kind of behavior ISO produces, we describe qualitatively the trajectories observed in default-configuration runs. In the Tumor Evolution Engine, starting from a small number of clones, populations grow toward the carrying capacity, mutations produce new lineages, and clones with more favorable birth-to-death ratios gradually increase in representation. In the Metabolism Engine, oxygen and glucose gradients form between vascular and non-vascular regions; glycolytic phenotypes dominate in hypoxic regions; lactate accumulates and lowers pH; and necrotic regions emerge in regions of sustained stress. In the Epigenetics Engine, methylation and acetylation drift toward their equilibrium values under baseline conditions, and diverge in the presence of stress, producing heterogeneous epigenetic states across regions. In the Synergy Engine, combined fitness evolves toward intermediate values rather than saturating at the extremes, reflecting the balance of positive drive and negative feedback built into the update rules.
+
+These behaviors are computational demonstrations of the implemented model dynamics. They are consistent with the qualitative expectations encoded in the model and are not evidence of biological correctness.
+
+\subsection{Cross-Engine Coupling}
+
+At the software level, the four engines are coupled through the master orchestration layer. The current released version executes the engines in sequence and reports their outputs. Direct coupling of the state variables across engines is provided through the public API of each engine, but is not exercised automatically by the master script. This design allows researchers to build custom integration pipelines without modifying the engines themselves. Systems-level integration at the level of live state variables is a target of future work, as described in Section~\ref{sec:future}.
+
+\section{Discussion}
+\label{sec:discussion}
+
+\subsection{What the Framework Contributes}
+
+The central contribution of ISO is a modular, reproducible architecture for representing interacting cancer-state variables across evolutionary, metabolic, and epigenetic scales. Each engine implements a well-bounded subset of the biology and is validated independently. The Synergy Engine provides a systems-level aggregation of the resulting fitness components. This design has three concrete benefits. First, it makes the submodels independently testable, which is important because interactions between submodels can otherwise mask errors in individual components. Second, it makes the submodels independently reusable, so that a researcher interested only in one layer can use that layer without adopting the entire framework. Third, it makes the coupling explicit: the interfaces between engines are documented, and any assumptions about how the layers interact are visible in the code and in this manuscript.
+
+The Synergy Engine specifically provides a mechanism for representing systems-level adaptive properties---mutation pressure, therapy resistance, adaptive capacity, resilience, and stability---as emergent consequences of coupled state rather than as exogenous inputs. This is a meaningful structural choice: it places the burden of explanation on the interactions of state variables rather than on hand-specified outcome variables.
+
+\subsection{Computational Synergy versus Clinical Synergy}
+
+It is essential to distinguish the sense of ``synergy'' used in this framework from the clinical and experimental sense of the term. In ISO, synergy refers to computational or model-level interaction between state variables: for example, the influence of metabolic stress on mutation pressure, or the influence of gene expression on adaptive capacity. These are internal model relationships, and their existence is a property of the model, not a claim about any biological system. The framework does not claim, and cannot support, any claim about therapeutic synergy in cells, animals, or patients. Distinguishing these two senses is important because the clinical sense of synergy implies an empirical result that ISO is not designed to produce.
+
+\subsection{Limitations}
+
+Several limitations should be stated clearly.
+
+\textbf{No empirical calibration.} The parameters in the current release are biologically motivated but are not fitted to specific datasets. Simulations therefore illustrate model behavior rather than predict specific biological outcomes. Empirical calibration is a target of future work.
+
+\textbf{Parameter identifiability.} Because the models are complex and the parameters interact, many parameter combinations can produce qualitatively similar trajectories. This limits the extent to which simulation output can be used to infer parameter values from observed behavior, and it motivates future sensitivity analysis and parameter inference work.
+
+\textbf{Simplified spatial structure.} The Metabolism and Epigenetics Engines use a one-dimensional spatial grid. This captures the qualitative formation of gradients but does not represent the full geometry of a tumor microenvironment. Extending to two or three dimensions is possible but is not implemented in the current release.
+
+\textbf{No immune system.} The framework does not currently represent immune cells, immune recognition, or immune-mediated killing. Immune visibility is present as a phenotype trait in the Tumor Evolution Engine, but this is a proxy, not a model of immune dynamics.
+
+\textbf{No therapeutic intervention.} The framework does not currently model the administration of therapy or the pharmacokinetics and pharmacodynamics of drugs. Therapy resistance is represented as a state variable, not as a response to a therapeutic agent.
+
+\textbf{Coupling assumptions.} The Synergy Engine aggregates evolutionary, metabolic, and epigenetic fitness through a weighted sum. This is a modeling choice, not a derived result, and other coupling schemes are possible.
+
+\textbf{Limited dynamic cross-engine coupling.} The engines currently run independently under the master orchestrator. Live state-level transfer between engines at each simulation step is not performed by the current release.
+
+\textbf{No formal uncertainty quantification.} The current release does not include Bayesian parameter inference, formal sensitivity analysis, or credible intervals on model outputs.
+
+\textbf{No benchmark against established simulators.} The framework has not been systematically compared against alternative published models of the same subsystems.
+
+\textbf{No experimental or clinical validation.} The framework has not been validated against experimental measurements or clinical outcomes, and no such claim is made.
+
+\textbf{Software validation is not biological validation.} The validation suites verify that the code behaves as documented and that the implemented relationships have the expected direction. They do not verify that the models are biologically correct. The distinction between these two kinds of validation is essential for interpreting the framework.
+
+\subsection{Why Modularity Matters}
+
+Modularity is not only a software-engineering convenience; it has scientific consequences. When submodels are independent, they can be validated against different kinds of evidence, replaced with alternative formulations, or reused in different combinations. A single monolithic simulator would obscure these possibilities. The ISO design deliberately makes each engine a standalone artifact so that the framework can grow through addition and refinement rather than through rewriting.
+
+\section{Future Work}
+\label{sec:future}
+
+Several directions follow naturally from the current release.
+
+\textbf{Empirical calibration.} Fitting engine parameters against public cancer datasets---for example, mutation spectra, metabolite concentrations in tumor interstitial fluid, or chromatin accessibility measurements---would connect the model to quantitative empirical anchors. This is the most direct way to move from qualitative to quantitative model behavior.
+
+\textbf{Patient-specific parameterization.} Using patient-derived measurements to initialize engine configurations would allow the framework to represent individual tumors more accurately. This is a prerequisite for any future translational application.
+
+\textbf{State-level cross-engine coupling.} The current release couples engines at the process level through the master orchestrator. A richer integration would pass state variables between engines at each simulation step, allowing feedbacks across the layers to be represented dynamically.
+
+\textbf{Higher-dimensional spatial models.} Extending the metabolic and epigenetic grids to two or three dimensions would allow more realistic tumor geometry and vascular structure to be represented.
+
+\textbf{Immune system modeling.} Adding an immune engine, either as an additional layer within ISO or as an external module that reads ISO outputs, would enable questions about immune-tumor interaction that the current framework cannot address.
+
+\textbf{Therapeutic intervention.} A therapy engine that applies external perturbations to the state variables---for example, reducing metabolic fitness or increasing apoptosis susceptibility---would allow the framework to represent treatment schedules and resistance dynamics in a structured way. This is a modeling step, not an empirical claim about treatment efficacy.
+
+\textbf{Uncertainty quantification.} Rigorous uncertainty quantification, including sensitivity analysis and Bayesian inference over model parameters, would strengthen the interpretive value of the framework.
+
+\textbf{Multi-omics integration.} Incorporating transcriptomic, proteomic, and metabolomic measurements as inputs to the engines would allow the framework to leverage the wealth of public multi-omics data.
+
+\textbf{Additional benchmarks.} Developing a formal benchmark suite that compares ISO output to established models of the same subsystems would provide a stronger basis for methodological comparison.
+
+\textbf{Hypothesis generation.} The framework is well-suited to generating mechanistic hypotheses about coupled cancer-state dynamics. These hypotheses would need to be tested experimentally before they could be used to support biological claims.
+
+All of these directions are clearly future work. The current release is deliberately scoped to the four engines described above, with an emphasis on correctness, reproducibility, and interpretability.
+
+\section{Conclusion}
+
+Integrated Systems Oncology provides a modular, reproducible computational framework for modeling tumor evolution, metabolism, epigenetics, and systems-level adaptive interaction. Each of the four engines is independently implemented, independently validated, and independently reusable, and the framework as a whole is verified by a project-wide validation suite. Each engine is deterministic given a random seed, and reproducibility is verified across identical and differing seeds. The framework explicitly distinguishes software validation from biological validation, and it does not claim clinical or experimental validation. Its primary contribution is methodological: a transparent, extensible substrate for mechanistic computational experiments on interacting cancer-state variables. As empirical calibration, additional spatial resolution, immune system modeling, and therapeutic intervention modeling are added, the framework is positioned to support progressively richer computational studies of cancer as a complex adaptive system.
+
+\section*{Declarations}
+
+\textbf{Funding} \\
+No external funding was received.
+
+\textbf{Acknowledgements} \\
+The author thanks the open-source scientific Python community for the tools that made this framework possible, and acknowledges the broader literature on computational oncology and cancer systems biology that has shaped its design.
+
+\textbf{Author Contributions} \\
+Dewan Sajid Islam designed the framework, implemented all four engines and their validation suites, and wrote the manuscript.
+
+\textbf{Conflict of Interest} \\
+The author declares no conflict of interest.
+
+\textbf{Ethics Approval} \\
+Not applicable. This work is entirely computational and does not involve human participants, human data, or animal subjects.
+
+\textbf{Consent for Publication} \\
+Not applicable.
+
+\textbf{Data Availability} \\
+No new empirical datasets were generated or analyzed in this work. The framework is designed for computational modeling and simulation; all results reported in this manuscript are outputs of the software itself. Existing public datasets are discussed only as potential resources for future empirical calibration work and were not analyzed as part of the present release.
+
+\textbf{Code Availability} \\
+The complete Integrated Systems Oncology framework, including all four engines, the master orchestration script, and the full validation suite, is available as open-source software. The repository is publicly available at \href{https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology}{https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology}. The software version documented in this manuscript is version 1.0.1. A version-specific archival record is available through Zenodo at \href{https://doi.org/10.5281/zenodo.21773219}{https://doi.org/10.5281/zenodo.21773219}, and a concept DOI that resolves to the latest release is available at \href{https://doi.org/10.5281/zenodo.21773218}{https://doi.org/10.5281/zenodo.21773218}.
+
+\begin{thebibliography}{99}
+
+\bibitem[Altrock et al.(2015)]{altrock2015}
+Altrock, P.~M., Liu, L.~L., and Michor, F.
+\newblock The mathematics of cancer: integrating quantitative models.
+\newblock \emph{Nature Reviews Cancer}, 15:730--745, 2015.
+\newblock doi:10.1038/nrc4029.
+
+\bibitem[Baylin and Jones(2016)]{baylin2016}
+Baylin, S.~B. and Jones, P.~A.
+\newblock Epigenetic determinants of cancer.
+\newblock \emph{Cold Spring Harbor Perspectives in Biology}, 8(9):a019505, 2016.
+\newblock doi:10.1101/cshperspect.a019505.
+
+\bibitem[Beerenwinkel et al.(2015)]{beerenwinkel2015}
+Beerenwinkel, N., Schwarz, R.~F., Gerstung, M., and Markowetz, F.
+\newblock Cancer evolution: mathematical models and computational inference.
+\newblock \emph{Systematic Biology}, 64(1):e1--e25, 2015.
+\newblock doi:10.1093/sysbio/syu081.
+
+\bibitem[Hanahan(2022)]{hanahan2022}
+Hanahan, D.
+\newblock Hallmarks of cancer: new dimensions.
+\newblock \emph{Cancer Discovery}, 12(1):31--46, 2022.
+\newblock doi:10.1158/2159-8290.CD-21-1059.
+
+\bibitem[Kitano(2002)]{kitano2002}
+Kitano, H.
+\newblock Systems biology: a brief overview.
+\newblock \emph{Science}, 295(5560):1662--1664, 2002.
+\newblock doi:10.1126/science.1069492.
+
+\bibitem[Markert and Vazquez(2015)]{markert2015}
+Markert, E.~K. and Vazquez, A.
+\newblock Mathematical models of cancer metabolism.
+\newblock \emph{Cancer \& Metabolism}, 3:14, 2015.
+\newblock doi:10.1186/s40170-015-0140-6.
+
+\bibitem[McGranahan and Swanton(2017)]{mcgranahan2017}
+McGranahan, N. and Swanton, C.
+\newblock Clonal heterogeneity and tumor evolution: past, present, and the future.
+\newblock \emph{Cell}, 168(4):613--628, 2017.
+\newblock doi:10.1016/j.cell.2017.01.018.
+
+\bibitem[Pavlova and Thompson(2016)]{pavlova2016}
+Pavlova, N.~N. and Thompson, C.~B.
+\newblock The emerging hallmarks of cancer metabolism.
+\newblock \emph{Cell Metabolism}, 23(1):27--47, 2016.
+\newblock doi:10.1016/j.cmet.2015.12.006.
+
+\bibitem[Pavlova et al.(2022)]{pavlova2022}
+Pavlova, N.~N., Zhu, J., and Thompson, C.~B.
+\newblock The hallmarks of cancer metabolism: still emerging.
+\newblock \emph{Cell Metabolism}, 34(3):355--377, 2022.
+\newblock doi:10.1016/j.cmet.2022.01.007.
+
+\bibitem[Sandve et al.(2013)]{sandve2013}
+Sandve, G.~K., Nekrutenko, A., Taylor, J., and Hovig, E.
+\newblock Ten simple rules for reproducible computational research.
+\newblock \emph{PLoS Computational Biology}, 9(10):e1003285, 2013.
+\newblock doi:10.1371/journal.pcbi.1003285.
+
+\bibitem[Wilkinson et al.(2016)]{wilkinson2016}
+Wilkinson, M.~D., Dumontier, M., Aalbersberg, I.~J.~J., Appleton, G., Axton, M., Baak, A., et al.
+\newblock The FAIR guiding principles for scientific data management and stewardship.
+\newblock \emph{Scientific Data}, 3:160018, 2016.
+\newblock doi:10.1038/sdata.2016.18.
+
+\end{thebibliography}
+
+\end{document}
