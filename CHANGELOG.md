@@ -22,7 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Release notes
 - **No functional simulation-engine code changes were made in v1.0.2.**
-- The Zenodo v1.0.2 version-specific DOI is to be added after the GitHub v1.0.2 release is archived.
+- The Zenodo v1.0.2 version-specific DOI is 10.5281/zenodo.22980897.
 
 ---
 
