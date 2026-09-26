@@ -1,0 +1,15 @@
+21 July 2026
+
+Project restarted.
+
+Objective:
+
+Transform manuscript into reproducible computational framework.
+
+Status:
+
+Architecture designed.
+
+Next task:
+
+Tumor Evolution Engine.

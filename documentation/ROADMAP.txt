@@ -1,0 +1,36 @@
+# ISO Project Roadmap
+
+## Completed
+
+✔ Architecture
+✔ Tumor Evolution Engine
+✔ Metabolism Engine
+✔ Epigenetics Engine
+✔ Synergy Engine
+✔ Master Engine
+✔ Project-wide validation
+✔ Active manuscript revision and scope correction
+✔ Legacy manuscript and 16 legacy figures archived
+✔ Core documentation synchronized
+✔ v1.0.0 public release
+✔ v1.0.1 Zenodo archival release
+
+## Current
+
+🟨 Repository cleanup and v1.0.2 release preparation
+🟨 GitHub v1.0.2 release
+🟨 Zenodo v1.0.2 archival DOI
+
+## Future
+
+⬜ Step-synchronized cross-engine state coupling
+⬜ Empirical calibration
+⬜ Formal uncertainty quantification and sensitivity analysis
+⬜ Benchmarking against established simulators
+⬜ Higher-dimensional spatial models
+⬜ Immune system modeling
+⬜ Therapeutic intervention / PK-PD modeling
+⬜ Patient-specific parameterization
+⬜ Multi-omics input integration
+⬜ Expanded analysis and visualization tooling
+⬜ Manuscript submission
