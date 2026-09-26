@@ -1,7 +1,5 @@
-8/1/2026
+2026-09-26
 
-1st August, 2026
+26 September 2026
 
-9:27PM
-
-Bangladesh, Dhaka
+Release preparation for v1.0.2
