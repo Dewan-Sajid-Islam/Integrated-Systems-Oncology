@@ -1,9 +1,10 @@
 # CITATION.cff
 cff-version: 1.2.0
+type: software
 message: "If you use Integrated Systems Oncology in research, publications, teaching, or derivative software, please cite both this software and the accompanying manuscript."
 title: "Integrated Systems Oncology: A Computational Oncology Framework"
-version: 1.0.1
-date-released: 2026-08-03
+version: 1.0.2
+date-released: 2026-09-26
 authors:
   - family-names: "Dewan"
     given-names: "Sajid Islam"
@@ -12,7 +13,9 @@ authors:
     country: "Bangladesh"
 license: "Apache-2.0"
 repository-code: "https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology"
-doi: "10.5281/zenodo.21773219"
+# Zenodo v1.0.2 has not been archived yet.
+# After the GitHub v1.0.2 release is archived on Zenodo, uncomment and replace both DOI placeholders below.
+# doi: "10.5281/zenodo.XXXXXXXX"
 keywords:
   - computational oncology
   - systems biology
@@ -26,19 +29,19 @@ keywords:
   - Python
 abstract: >
   Integrated Systems Oncology is a modular computational oncology framework composed
-  of four independently validated biological simulation engines: Tumor Evolution,
+  of four independently validated computational simulation engines: Tumor Evolution,
   Metabolism, Epigenetics, and Synergy, with a master orchestration layer and
-  project-wide validation. The framework provides deterministic, reproducible
-  simulations of cancer progression, covering clonal evolution, metabolic dynamics,
-  epigenetic regulation, and their systems-level interactions. It is designed for
-  reproducible computational oncology research, education, and scientific collaboration.
+  project-wide validation. The framework provides seed-reproducible simulations of
+  cancer-state dynamics, covering clonal evolution, metabolic dynamics, epigenetic
+  regulation, and systems-level model interaction. It is designed for reproducible
+  computational oncology research, education, and scientific collaboration.
 preferred-citation:
   type: software
   title: "Integrated Systems Oncology: A Computational Oncology Framework"
   authors:
     - family-names: "Dewan"
       given-names: "Sajid Islam"
-  version: "1.0.1"
-  doi: "10.5281/zenodo.21773219"
+  version: "1.0.2"
+  # doi: "10.5281/zenodo.XXXXXXXX"
   repository-code: "https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology"
-  date-released: "2026-08-03"
+  date-released: "2026-09-26"
