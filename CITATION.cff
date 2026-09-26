@@ -13,9 +13,7 @@ authors:
     country: "Bangladesh"
 license: "Apache-2.0"
 repository-code: "https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology"
-# Zenodo v1.0.2 has not been archived yet.
-# After the GitHub v1.0.2 release is archived on Zenodo, uncomment and replace both DOI placeholders below.
-# doi: "10.5281/zenodo.XXXXXXXX"
+# doi: "10.5281/zenodo.22980897"
 keywords:
   - computational oncology
   - systems biology
@@ -42,6 +40,6 @@ preferred-citation:
     - family-names: "Dewan"
       given-names: "Sajid Islam"
   version: "1.0.2"
-  # doi: "10.5281/zenodo.XXXXXXXX"
+  # doi: "10.5281/zenodo.22980897"
   repository-code: "https://github.com/Dewan-Sajid-Islam/Integrated-Systems-Oncology"
   date-released: "2026-09-26"
