@@ -5,66 +5,42 @@ All notable changes to the Integrated Systems Oncology Framework are documented 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.0]
-
-### Added
-- **Tumor Evolution Engine** – Complete implementation of clonal evolution with:
-  - Logistic growth and birth‑death dynamics.
-  - Driver and passenger mutations with phenotype effects.
-  - Selection via replicator dynamics.
-  - Lineage tracking (parent, generation, root ancestor).
-  - Shannon and Simpson diversity indices.
-  - Deterministic random number generation.
-- **Metabolism Engine** – Full spatiotemporal metabolic model with:
-  - 1D diffusion for oxygen, glucose, lactate, and pH.
-  - Oxygen and glucose consumption, ATP production (glycolysis and OXPHOS).
-  - Warburg effect with configurable bias.
-  - ROS production and decay.
-  - Necrosis and metabolic phenotype assignment.
-  - Vascular supply mapping.
-- **Epigenetics Engine** – Dynamic epigenetic regulation including:
-  - DNA methylation and histone acetylation dynamics.
-  - Chromatin accessibility and gene expression potential.
-  - Plasticity, stemness, and differentiation.
-  - Epigenetic instability and age.
-  - Expression noise.
-- **Synergy Engine** – Systems‑level integration with:
-  - Combined fitness from tumour, metabolic, and epigenetic components.
-  - Mutation pressure, therapy resistance, adaptive capacity, and resilience.
-  - System stability with feedback loops.
-  - Weighted integration of subsystem fitness.
-- **Master Engine** (`master_engine.py`) – Orchestrates sequential execution of all four engines.
-- **Project Validation Suite** (`validate_project.py`) – Runs all engine‑level validations.
-- **Engine Validation Suites** – Each engine includes a comprehensive `validate_all.py` with multiple independent validators:
-  - **Tumor Evolution**: growth, mutation, diversity, lineage, reproducibility.
-  - **Metabolism**: diffusion, metabolism, phenotypes, reproducibility.
-  - **Epigenetics**: epigenetics, chromatin, differentiation, reproducibility.
-  - **Synergy**: synergy, feedback, stability, adaptation, reproducibility.
-- **Documentation** – Complete user and reference documentation:
-  - `README.md` – project overview, features, installation, usage.
-  - `PARAMETERS.md` – full parameter reference manual.
-  - `MODEL_EQUATIONS.md` – mathematical specification of all engines.
-  - `ARCHITECTURE.md` – software architecture and design principles.
-- **Metadata** – `CITATION.cff`, `LICENSE` (Apache 2.0), `VERSION` file for repository compliance.
+## [1.0.2] – 2026-09-26
 
 ### Changed
-- (No changes; this is the first release.)
+- Synchronized repository metadata to version 1.0.2.
+- Updated README, architecture documentation, mathematical specification, and parameter reference to match the current implementation.
+- Clarified that the Tumor Evolution Engine uses a discrete stochastic birth–death–mutation process; it does not apply an explicit replicator-dynamics selection operator.
+- Clarified that the master orchestrator runs engines sequentially and does not perform live step-by-step state transfer between engines.
+- Updated the active repository structure so the superseded manuscript and its 16 legacy figures are preserved under `archive/` while the active manuscript remains under `manuscript/`.
+- Added a repository/metadata release note distinguishing the v1.0.2 repository state from the v1.0.1 manuscript/software archival version.
 
 ### Fixed
-- (No fixes; this is the first release.)
+- Removed stale parameter names and outdated mathematical descriptions from the active documentation.
+- Corrected the README installation example and repository folder description.
+- Removed the obsolete external `references.bib` dependency from the active project documentation (the manuscript bibliography is embedded in `main.tex`).
 
-### Validation
-- All engines are fully validated with deterministic, reproducible test suites.
-- Project‑wide validation passes with all engines returning PASS.
-
-### Documentation
-- Comprehensive documentation set as listed above.
-
-### Architecture
-- Modular, self‑contained engines with public APIs.
-- Master engine for sequence control.
-- Validation‑first design ensuring scientific integrity.
+### Release notes
+- **No functional simulation-engine code changes were made in v1.0.2.**
+- The Zenodo v1.0.2 version-specific DOI is to be added after the GitHub v1.0.2 release is archived.
 
 ---
 
-**Version 1.0.0 represents the first complete public software release of the Integrated Systems Oncology Framework.**
+## [1.0.1] – 2026-08-03
+
+Versioned archival release documented by the current manuscript. The version-specific Zenodo record is `10.5281/zenodo.21773219`; the concept DOI is `10.5281/zenodo.21773218`.
+
+---
+
+## [1.0.0] – Historical entry
+
+The original public software release. The historical details below are retained for release-history purposes; the current implementation and equations are documented in the v1.0.2 files.
+
+### Added
+- Four simulation engines covering tumor evolution, metabolism, epigenetics, and systems-level synergy.
+- Engine-level and project-wide validation suites.
+- Master orchestration script.
+- Core documentation and software metadata.
+
+### Validation
+- Engine and project-wide validation suites were established for the public release.
