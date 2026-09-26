@@ -205,7 +205,7 @@ The current release is intentionally limited to the four implemented engines. It
 
 Software citation metadata is maintained in `CITATION.cff`.
 
-**Zenodo v1.0.2 DOI:** to be added after the GitHub v1.0.2 release is archived on Zenodo.
+Zenodo v1.0.2 DOI: 10.5281/zenodo.22980897
 
 The manuscript in `manuscript/` documents v1.0.1 and therefore retains its v1.0.1 version-specific Zenodo DOI.
 
